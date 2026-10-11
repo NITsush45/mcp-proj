@@ -245,7 +245,4 @@ Values files (`values.yaml`, `values-local.yaml`, `values-prod.yaml`) let you sw
 
 ---
 
-<p align="center">
-  Built for the Urumi AI FDE Internship · a single secured gateway in front of many MCP servers.
-</p>
 
