@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.gateway.replicas }}
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  selector: { matchLabels: { app: gateway } }
+  template:
+    metadata: { labels: { app: gateway } }
+    spec:
+      serviceAccountName: {{ .Values.global.namespace }}-sa
+      securityContext: { runAsNonRoot: true, runAsUser: 1001, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: gateway
+          image: {{ .Values.gateway.image | quote }}
+          ports: [{ containerPort: {{ .Values.gateway.port }} }]
+          env:
+            - { name: PORT, value: {{ .Values.gateway.port | quote }} }
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: gateway-secrets, key: database-url } }
+            - name: JWT_SECRET
+              valueFrom: { secretKeyRef: { name: gateway-secrets, key: jwt-secret } }
+            - name: LLM_API_KEY
+              valueFrom: { secretKeyRef: { name: gateway-secrets, key: llm-api-key, optional: true } }
+          livenessProbe: { httpGet: { path: /healthz, port: {{ .Values.gateway.port }} }, initialDelaySeconds: 15, periodSeconds: 15 }
+          readinessProbe: { httpGet: { path: /readyz, port: {{ .Values.gateway.port }} }, initialDelaySeconds: 10, periodSeconds: 10 }
+          resources: {{ .Values.gateway.resources | toYaml | nindent 12 }}
+          securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: { drop: [ALL] } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector: { app: gateway }
+  ports: [{ port: {{ .Values.gateway.port }}, targetPort: {{ .Values.gateway.port }} }]

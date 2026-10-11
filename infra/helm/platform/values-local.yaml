@@ -1,0 +1,8 @@
+# Local (Docker Desktop / kind) overrides
+ingress:
+  className: nginx
+  dashboardHost: dashboard.urumi.local
+  gatewayHost: gateway.urumi.local
+  tls: false
+postgres:
+  storage: 2Gi

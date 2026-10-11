@@ -1,0 +1,38 @@
+{{- $mcps := list
+  (dict "name" "woocommerce-mcp" "key" "woocommerceMcp")
+  (dict "name" "notes-mcp" "key" "notesMcp")
+  (dict "name" "inventory-mcp" "key" "inventoryMcp") }}
+{{- range $m := $mcps }}
+{{- $cfg := index $.Values $m.key }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $m.name }}
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  replicas: {{ $cfg.replicas }}
+  selector: { matchLabels: { app: {{ $m.name }} } }
+  template:
+    metadata: { labels: { app: {{ $m.name }} } }
+    spec:
+      serviceAccountName: {{ $.Values.global.namespace }}-sa
+      securityContext: { runAsNonRoot: true, runAsUser: 1001, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: mcp
+          image: {{ $cfg.image | quote }}
+          ports: [{ containerPort: {{ $cfg.port }} }]
+          livenessProbe: { httpGet: { path: /healthz, port: {{ $cfg.port }} }, initialDelaySeconds: 10, periodSeconds: 15 }
+          readinessProbe: { httpGet: { path: /healthz, port: {{ $cfg.port }} }, initialDelaySeconds: 5, periodSeconds: 10 }
+          resources: {{ $cfg.resources | toYaml | nindent 12 }}
+          securityContext: { allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: { drop: [ALL] } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $m.name }}
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  selector: { app: {{ $m.name }} }
+  ports: [{ port: {{ $cfg.port }}, targetPort: {{ $cfg.port }} }]
+{{- end }}

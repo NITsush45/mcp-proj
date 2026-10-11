@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: {{ .Values.global.namespace }}
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector: { matchLabels: { app: postgres } }
+  template:
+    metadata: { labels: { app: postgres } }
+    spec:
+      securityContext: { runAsNonRoot: false, runAsUser: 999, fsGroup: 999 }
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image | quote }}
+          ports: [{ containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_DB, value: urumi_gateway }
+            - { name: POSTGRES_USER, value: urumi }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: postgres-secrets, key: password } }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
+          livenessProbe: { exec: { command: [pg_isready, -U, urumi] }, initialDelaySeconds: 20, periodSeconds: 15 }
+          readinessProbe: { exec: { command: [pg_isready, -U, urumi] }, initialDelaySeconds: 10, periodSeconds: 10 }
+          resources: {{ .Values.postgres.resources | toYaml | nindent 12 }}
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: { requests: { storage: {{ .Values.postgres.storage }} } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector: { app: postgres }
+  ports: [{ port: 5432, targetPort: 5432 }]
+  clusterIP: None

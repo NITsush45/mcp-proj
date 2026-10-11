@@ -1,0 +1,6 @@
+apiVersion: v2
+name: store
+description: WordPress + WooCommerce + MariaDB for Urumi demo store
+type: application
+version: 0.1.0
+appVersion: "6.6"

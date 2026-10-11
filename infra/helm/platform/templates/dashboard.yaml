@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.dashboard.replicas }}
+  selector: { matchLabels: { app: dashboard } }
+  template:
+    metadata: { labels: { app: dashboard } }
+    spec:
+      serviceAccountName: {{ .Values.global.namespace }}-sa
+      securityContext: { runAsNonRoot: true, runAsUser: 101, seccompProfile: { type: RuntimeDefault } }
+      containers:
+        - name: dashboard
+          image: {{ .Values.dashboard.image | quote }}
+          ports: [{ containerPort: {{ .Values.dashboard.port }} }]
+          livenessProbe: { httpGet: { path: /, port: {{ .Values.dashboard.port }} }, initialDelaySeconds: 10, periodSeconds: 15 }
+          readinessProbe: { httpGet: { path: /, port: {{ .Values.dashboard.port }} }, initialDelaySeconds: 5, periodSeconds: 10 }
+          resources: {{ .Values.dashboard.resources | toYaml | nindent 12 }}
+          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: [ALL] } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector: { app: dashboard }
+  ports: [{ port: {{ .Values.dashboard.port }}, targetPort: {{ .Values.dashboard.port }} }]

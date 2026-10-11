@@ -1,0 +1,12 @@
+# Production-like (k3s VPS) overrides — same charts, env-specific values
+gateway:
+  replicas: 2
+dashboard:
+  replicas: 2
+ingress:
+  className: traefik
+  dashboardHost: dashboard.example.com
+  gatewayHost: gateway.example.com
+  tls: true
+postgres:
+  storage: 20Gi

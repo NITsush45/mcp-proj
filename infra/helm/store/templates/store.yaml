@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.global.namespace }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  namespace: {{ .Values.global.namespace }}
+spec:
+  serviceName: mariadb
+  replicas: 1
+  selector: { matchLabels: { app: mariadb } }
+  template:
+    metadata: { labels: { app: mariadb } }
+    spec:
+      containers:
+        - name: mariadb
+          image: {{ .Values.mariadb.image | quote }}
+          ports: [{ containerPort: 3306 }]
+          env:
+            - { name: MARIADB_DATABASE, value: wordpress }
+            - { name: MARIADB_USER, value: wordpress }
+            - name: MARIADB_PASSWORD
+              valueFrom: { secretKeyRef: { name: store-secrets, key: db-password } }
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom: { secretKeyRef: { name: store-secrets, key: root-password } }
+          volumeMounts: [{ name: data, mountPath: /var/lib/mysql }]
+          livenessProbe: { exec: { command: [mariadb-admin, ping, -uwordpress, -p$$(MARIADB_PASSWORD)] }, initialDelaySeconds: 30, periodSeconds: 20 }
+          readinessProbe: { exec: { command: [mariadb-admin, ping, -uwordpress, -p$$(MARIADB_PASSWORD)] }, initialDelaySeconds: 15, periodSeconds: 10 }
+          resources: {{ .Values.mariadb.resources | toYaml | nindent 12 }}
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec: { accessModes: [ReadWriteOnce], resources: { requests: { storage: {{ .Values.mariadb.storage }} } } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector: { app: mariadb }
+  ports: [{ port: 3306 }]
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: {{ .Values.global.namespace }}
+spec:
+  replicas: {{ .Values.wordpress.replicas }}
+  strategy: { type: RollingUpdate, rollingUpdate: { maxUnavailable: 0, maxSurge: 1 } }
+  selector: { matchLabels: { app: wordpress } }
+  template:
+    metadata: { labels: { app: wordpress } }
+    spec:
+      containers:
+        - name: wordpress
+          image: {{ .Values.wordpress.image | quote }}
+          ports: [{ containerPort: 80 }]
+          env:
+            - { name: WORDPRESS_DB_HOST, value: mariadb }
+            - { name: WORDPRESS_DB_NAME, value: wordpress }
+            - { name: WORDPRESS_DB_USER, value: wordpress }
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: store-secrets, key: db-password } }
+          volumeMounts: [{ name: content, mountPath: /var/www/html }]
+          livenessProbe: { httpGet: { path: /wp-login.php, port: 80 }, initialDelaySeconds: 60, periodSeconds: 30 }
+          readinessProbe: { httpGet: { path: /wp-login.php, port: 80 }, initialDelaySeconds: 30, periodSeconds: 15 }
+          resources: {{ .Values.wordpress.resources | toYaml | nindent 12 }}
+      volumes: [{ name: content, persistentVolumeClaim: { claimName: wordpress-content } }]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wordpress-content
+  namespace: {{ .Values.global.namespace }}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: {{ .Values.wordpress.storage }} } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: {{ .Values.global.namespace }}
+spec:
+  selector: { app: wordpress }
+  ports: [{ port: 80 }]
+---
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: store
+  namespace: {{ .Values.global.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.storeHost | quote }}
+      http: { paths: [{ path: /, pathType: Prefix, backend: { service: { name: wordpress, port: { number: 80 } } } }] }
+{{- end }}

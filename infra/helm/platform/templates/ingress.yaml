@@ -1,0 +1,19 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: platform
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls }}
+  tls: [{ hosts: [{{ .Values.ingress.dashboardHost | quote }}, {{ .Values.ingress.gatewayHost | quote }}], secretName: platform-tls }]
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.dashboardHost | quote }}
+      http: { paths: [{ path: /, pathType: Prefix, backend: { service: { name: dashboard, port: { number: {{ .Values.dashboard.port }} } } } }] }
+    - host: {{ .Values.ingress.gatewayHost | quote }}
+      http: { paths: [{ path: /, pathType: Prefix, backend: { service: { name: gateway, port: { number: {{ .Values.gateway.port }} } } } }] }
+{{- end }}

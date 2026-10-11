@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: urumi_gateway
+      POSTGRES_USER: urumi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-urumi_dev_pw}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U urumi"]
+      interval: 5s
+      retries: 10
+
+  woocommerce-mcp:
+    build: { context: ., dockerfile: ./services/woocommerce-mcp/Dockerfile }
+    environment:
+      WOO_MCP_PORT: 8081
+      WOOCOMMERCE_BASE_URL: ${WOOCOMMERCE_BASE_URL:-}
+      WOOCOMMERCE_CONSUMER_KEY: ${WOOCOMMERCE_CONSUMER_KEY:-}
+      WOOCOMMERCE_CONSUMER_SECRET: ${WOOCOMMERCE_CONSUMER_SECRET:-}
+    ports: ["8081:8081"]
+
+  notes-mcp:
+    build: { context: ., dockerfile: ./services/demo-mcp-servers/notes-mcp/Dockerfile }
+    environment:
+      NOTES_MCP_PORT: 8082
+    ports: ["8082:8082"]
+
+  inventory-mcp:
+    build: { context: ., dockerfile: ./services/demo-mcp-servers/inventory-mcp/Dockerfile }
+    environment:
+      INVENTORY_MCP_PORT: 8083
+    ports: ["8083:8083"]
+
+  gateway:
+    build: { context: ., dockerfile: ./services/gateway/Dockerfile }
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      PORT: 8080
+      DATABASE_URL: postgres://urumi:${POSTGRES_PASSWORD:-urumi_dev_pw}@postgres:5432/urumi_gateway
+      JWT_SECRET: ${JWT_SECRET:-change-me-dev-only-min-32-chars-long-secret-xyz}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@urumi.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-ChangeMe123!}
+      UPSTREAM_TIMEOUT_MS: 8000
+      UPSTREAM_DISCOVERY_TIMEOUT_MS: 5000
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+    ports: ["8080:8080"]
+
+volumes:
+  pgdata:

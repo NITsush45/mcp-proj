@@ -1,0 +1,20 @@
+global:
+  namespace: urumi-store
+  domain: urumi.local
+
+wordpress:
+  image: wordpress:6.6-apache
+  replicas: 1
+  storage: 5Gi
+  resources: { requests: { cpu: 200m, memory: 512Mi }, limits: { cpu: 1000m, memory: 1Gi } }
+
+mariadb:
+  image: mariadb:11
+  storage: 5Gi
+  resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { cpu: 500m, memory: 512Mi } }
+
+ingress:
+  enabled: true
+  className: nginx
+  storeHost: store.urumi.local
+  tls: false
