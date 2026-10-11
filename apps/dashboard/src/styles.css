@@ -4,7 +4,7 @@
    a real serif for display, generous rules, and crisp 6px corners.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Fonts (Fraunces, Inter, JetBrains Mono) are loaded via <link> in index.html. */
 
 :root {
   /* Palette — warm neutrals + a single terracotta accent */
