@@ -1,15 +1,16 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { useAuth } from '../features/auth/AuthContext.js';
+import { IconGrid, IconStack, IconPeople, IconKey, IconScroll, IconChat, IconCog, UrumiMark } from '../components/Icons.js';
 
-const NAV: { to: string; label: string; icon: string }[] = [
-  { to: '/', label: 'Overview', icon: '▦' },
-  { to: '/servers', label: 'MCP Servers', icon: '⬡' },
-  { to: '/team', label: 'Team', icon: '☺' },
-  { to: '/keys', label: 'API Keys', icon: '⚿' },
-  { to: '/audit', label: 'Audit Logs', icon: '≣' },
-  { to: '/chat', label: 'Chat Agent', icon: '✦' },
-  { to: '/settings', label: 'Settings', icon: '⚙' },
+const NAV: { to: string; label: string; Icon: (p: { size?: number }) => JSX.Element }[] = [
+  { to: '/', label: 'Overview', Icon: IconGrid },
+  { to: '/servers', label: 'MCP Servers', Icon: IconStack },
+  { to: '/team', label: 'Team', Icon: IconPeople },
+  { to: '/keys', label: 'API Keys', Icon: IconKey },
+  { to: '/audit', label: 'Audit Logs', Icon: IconScroll },
+  { to: '/chat', label: 'Chat Agent', Icon: IconChat },
+  { to: '/settings', label: 'Settings', Icon: IconCog },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -19,22 +20,22 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <div className="logo">U</div>
+          <div className="logo"><UrumiMark size={22} /></div>
           <div>
             <h1>Urumi Gateway</h1>
             <div className="sub">Team MCP control plane</div>
           </div>
         </div>
         <div className="nav-section">Menu</div>
-        {NAV.map((n) => (
+        {NAV.map(({ to, label, Icon }) => (
           <NavLink
-            key={n.to}
-            to={n.to}
-            end={n.to === '/'}
+            key={to}
+            to={to}
+            end={to === '/'}
             className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
           >
-            <span className="nav-icon">{n.icon}</span>
-            {n.label}
+            <span className="nav-icon"><Icon /></span>
+            {label}
           </NavLink>
         ))}
         <div className="sidebar-footer">
@@ -52,3 +53,4 @@ export function Layout({ children }: { children: ReactNode }) {
     </div>
   );
 }
+

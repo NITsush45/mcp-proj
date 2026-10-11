@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Urumi">
+  <rect width="64" height="64" rx="13" fill="#b4462f"/>
+  <path d="M21 17v13.5c0 6.35 4.93 11.5 11 11.5s11-5.15 11-11.5V17"
+        fill="none" stroke="#fdf8ee" stroke-width="6" stroke-linecap="round"/>
+  <path d="M24.5 47.5h15" stroke="#f6cdbb" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,5 +1,8 @@
 # Urumi MCP Platform
 
+[![CI](https://github.com/NITsush45/mcp-proj/actions/workflows/ci.yml/badge.svg)](https://github.com/NITsush45/mcp-proj/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > **A team MCP gateway.** One gateway exposes a single `/mcp` endpoint that aggregates multiple Model Context Protocol (MCP) servers behind a unified surface — with a React dashboard, an LLM chat agent, hashed team API keys, and a full audit log. Runs locally on Docker Compose or on Kubernetes via Helm.
 
 Ask the agent *"how many orders came in today?"* in plain English → the gateway routes the question to the right tool, the right MCP server answers it, and every call is audited.

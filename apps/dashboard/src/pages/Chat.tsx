@@ -45,9 +45,9 @@ export function ChatPage() {
               {m.calls && m.calls.length > 0 && (
                 <div className="tool-calls">
                   {m.calls.map((c, j) => (
-                    <details key={j} style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+                    <details key={j}>
                       <summary>{c.exposed} → {c.slug}</summary>
-                      <pre style={{ margin: 0, padding: '8px 12px', fontSize: 11.5, background: '#0f172a', color: '#e2e8f0' }}>{c.result}</pre>
+                      <pre>{c.result}</pre>
                     </details>
                   ))}
                 </div>

@@ -52,7 +52,7 @@ export function KeysPage() {
             <button className="btn primary sm" onClick={copy}>{copied ? '✓ Copied' : 'Copy key'}</button>
             <button className="btn secondary sm" onClick={() => setFresh('')}>Dismiss</button>
           </div>
-          <p style={{ fontSize: 12, color: '#92400e', margin: '10px 0 0' }}>
+          <p style={{ fontSize: 12, color: 'var(--accent-ink)', margin: '10px 0 0' }}>
             Use it as <code>Authorization: Bearer {fresh.slice(0, 14)}…</code> against <code>POST /mcp</code>.
           </p>
         </div>
