@@ -1,0 +1,42 @@
+﻿# ---- Dependencies ----
+node_modules/
+.pnp
+.pnp.js
+
+# ---- Build output ----
+dist/
+build/
+*.tsbuildinfo
+
+# ---- Secrets / environment (NEVER commit) ----
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+!*.pub
+
+# ---- Logs ----
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# ---- Test coverage ----
+coverage/
+.nyc_output/
+
+# ---- Editor / OS ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Docker local volumes ----
+pgdata/
+
+# ---- Temp ----
+*.tmp
+.temp/

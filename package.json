@@ -1,0 +1,29 @@
+{
+  "name": "urumi-mcp-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Urumi AI FDE Internship — Team MCP Gateway on Kubernetes",
+  "workspaces": [
+    "apps/dashboard",
+    "services/gateway",
+    "services/woocommerce-mcp",
+    "services/demo-mcp-servers/notes-mcp",
+    "services/demo-mcp-servers/inventory-mcp"
+  ],
+  "scripts": {
+    "dev:gateway": "npm run dev --workspace=services/gateway",
+    "dev:dashboard": "npm run dev --workspace=apps/dashboard",
+    "dev:woo-mcp": "npm run dev --workspace=services/woocommerce-mcp",
+    "dev:notes-mcp": "npm run dev --workspace=services/demo-mcp-servers/notes-mcp",
+    "dev:inventory-mcp": "npm run dev --workspace=services/demo-mcp-servers/inventory-mcp",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "helm:lint": "helm lint infra/helm/platform && helm lint infra/helm/store",
+    "helm:template:local": "helm template platform infra/helm/platform -f infra/helm/platform/values.yaml -f infra/helm/platform/values-local.yaml",
+    "helm:template:prod": "helm template platform infra/helm/platform -f infra/helm/platform/values.yaml -f infra/helm/platform/values-prod.yaml"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
